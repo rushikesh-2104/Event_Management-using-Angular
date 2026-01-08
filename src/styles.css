@@ -1,1 +1,13 @@
 /* You can add global styles to this file, and also import other style files */
+.ultra-regular {
+  font-family: "Ultra", serif;
+  font-weight: 800;
+  font-style: bold;
+}
+
+.lora{
+  font-family: "Lora", serif;
+  font-optical-sizing: auto;
+  font-weight: bold;
+  font-style: normal;
+}

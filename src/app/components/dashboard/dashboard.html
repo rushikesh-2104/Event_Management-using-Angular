@@ -1,0 +1,53 @@
+<div class="bg-slate-200 h-full w-full p-1">
+    
+<div class="lg:grid lg:grid-cols-5 lg:grid-rows-6 lg:gap-2">
+
+    <div class="lg:row-span-6 bg-slate-900 lg:p-3 p-2">
+        
+<div class="lg:grid lg:grid-cols-1 lg:grid-rows-3 flex">
+    <div class="ultra-regular ml-2 lg:ml-0 lg:text-5xl text-2xl text-white">EventTrack</div>
+    <div class="lg:mt-3 mt-1 ml-18 lg:ml-0">
+        <p class="text-slate-300">Dashboard</p>
+    </div>
+    <div class="lg:mt-1 mt-1 ml-5 lg:ml-0">
+        <p class="text-slate-300">Table</p>
+    </div>
+</div>
+    
+    </div>
+
+    <div class="col-span-4 bg-sky-700 text-slate-100 text-center lg:text-4xl lg:pt-10 pt-0.5 lora">YASHOPURAM VASANT ANNUAL POOJA 2026</div>
+
+    <div class="col-span-4 col-start-2 row-start-2 text-center lg:h-[15vh]">
+        
+<div class="grid grid-cols-3 grid-rows-1 gap-2 h-full">
+    <div class="bg-sky-300 lg:pt-5 lora text-2xl">
+        <p>Total Participations</p>
+        <p class="text-4xl pt-2">{{ totalParticipants }}</p>
+    </div>
+    <div class="bg-sky-300 lg:pt-5 lora text-2xl">
+        <p>Games Participations</p>
+        <p class="text-4xl pt-2">{{ totalGameEntries }}</p>
+    </div>
+
+    <div class="bg-sky-300 lg:pt-5 lora text-2xl">
+        <p>Event Participations</p>
+        <p class="text-4xl pt-2">{{ totalEventEntries }}</p>
+    </div>
+    
+</div>
+    
+    </div>
+
+    <div class="col-span-4 row-span-4 col-start-2 row-start-3 bg-slate-800 text-white">
+        <div class="pl-5 pt-3">
+            <input type="file" accept=".xlsx,.xls" (change)="onFileUpload($event)" class="border border-white p-3">
+            <p>Total Participants: {{ totalParticipants }}</p>
+            <canvas id="gamesChart" width="600" height="100"></canvas>
+        </div>
+    </div>
+
+</div>
+    
+</div>
+    
