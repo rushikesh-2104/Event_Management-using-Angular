@@ -12,15 +12,18 @@ import { DataService } from '../../data';
 export class DashboardComponent implements OnInit {
   data: any[] = [];
 
+  // TOP CARDS
   totalParticipants = 0;
   totalGameEntries = 0;
   totalEventEntries = 0;
 
+  // DATA STORAGE
   femaleGameCount: { [key: string]: number } = {};
   maleGameCount: { [key: string]: number } = {};
   childrenGameCount: { [key: string]: number } = {};
   activityStats: { [key: string]: number } = {}; 
 
+  // CHART REFERENCES
   femaleChart: any;
   maleChart: any;
   childrenChart: any;
@@ -29,7 +32,6 @@ export class DashboardComponent implements OnInit {
   constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
-    // 1. Page load hote hi Service se saved data uthao (Persistence)
     this.dataService.currentData.subscribe(savedData => {
       if (savedData && savedData.length > 0) {
         this.data = savedData;
@@ -46,9 +48,7 @@ export class DashboardComponent implements OnInit {
       const workbook = XLSX.read(e.target.result, { type: 'binary' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(sheet);
-      
-      // 2. Data ko service ke through update karo (Yeh localStorage mein bhi save karega)
-      this.dataService.updateData(jsonData); 
+      this.dataService.updateData(jsonData);
     };
     reader.readAsBinaryString(file);
   }
@@ -56,9 +56,8 @@ export class DashboardComponent implements OnInit {
   processData(): void {
     if (!this.data || this.data.length === 0) return;
 
-    // Reset counts before processing
     this.totalParticipants = this.data.length;
-    this.totalGameEntries = 0;
+    this.totalGameEntries = 0; // Reset for recalculation
     this.totalEventEntries = 0;
     this.femaleGameCount = {};
     this.maleGameCount = {};
@@ -68,24 +67,12 @@ export class DashboardComponent implements OnInit {
     this.data.forEach(row => {
       const keys = Object.keys(row);
       
-      const overallGamesKey = keys.find(k => {
-        const key = k.toLowerCase();
-        return key.includes('which games') && !key.includes('female') && !key.includes('male') && !key.includes('children') && !key.includes('kids');
-      });
-
       const femaleGamesKey = keys.find(k => k.toLowerCase().includes('which games') && k.toLowerCase().includes('female'));
       const maleGamesKey = keys.find(k => k.toLowerCase().includes('which games') && k.toLowerCase().includes('male') && !k.toLowerCase().includes('female'));
       const childrenGamesKey = keys.find(k => k.toLowerCase().includes('which games') && (k.toLowerCase().includes('children') || k.toLowerCase().includes('kids')));
       const activitiesKey = keys.find(k => k.toLowerCase().includes('which activity')); 
 
-      // Stats Calculation Logic
-      if (overallGamesKey && row[overallGamesKey]) {
-        const val = String(row[overallGamesKey]);
-        if (!val.toLowerCase().includes('none')) {
-          this.totalGameEntries += val.split(',').filter(g => g.trim().length > 0).length;
-        }
-      }
-
+      // 1. Events/Activity Count Logic
       if (activitiesKey && row[activitiesKey]) {
         const val = String(row[activitiesKey]);
         if (!val.toLowerCase().includes('none')) {
@@ -97,17 +84,22 @@ export class DashboardComponent implements OnInit {
         }
       }
 
+      // 2. Games Count Logic (Male, Female, Kids Combined)
       const fillStorage = (key: string | undefined, storage: any) => {
         if (key && row[key]) {
-          String(row[key]).split(',').forEach(g => {
-            const name = g.trim();
-            if (!name) return;
-            if (name.toLowerCase().includes('none')) {
-              storage['NONE (Skipped)'] = (storage['NONE (Skipped)'] || 0) + 1;
-            } else {
+          const val = String(row[key]);
+          if (!val.toLowerCase().includes('none')) {
+            const games = val.split(',').map(g => g.trim()).filter(g => g.length > 0);
+            
+            // Yahan total games count ho rahe hain
+            this.totalGameEntries += games.length;
+
+            games.forEach(name => {
               storage[name] = (storage[name] || 0) + 1;
-            }
-          });
+            });
+          } else {
+            storage['NONE'] = (storage['NONE'] || 0) + 1;
+          }
         }
       };
 
@@ -116,8 +108,8 @@ export class DashboardComponent implements OnInit {
       fillStorage(childrenGamesKey, this.childrenGameCount);
     });
 
-    // Render Charts
-    setTimeout(() => { // Timeout ensures DOM is ready for Canvas
+    // Timeout ensures Canvas elements are ready in DOM
+    setTimeout(() => {
       this.renderChart('femaleChart', this.femaleGameCount, '#a855f7', 'female');
       this.renderChart('maleChart', this.maleGameCount, '#3b82f6', 'male');
       this.renderChart('childrenChart', this.childrenGameCount, '#f59e0b', 'children');
@@ -130,34 +122,33 @@ export class DashboardComponent implements OnInit {
     const values = Object.values(dataset);
     const total = this.totalParticipants;
 
-    // Destroy old chart instances to prevent memory leaks
-    if (type === 'female') this.femaleChart?.destroy();
-    if (type === 'male') this.maleChart?.destroy();
-    if (type === 'children') this.childrenChart?.destroy();
-    if (type === 'activity') this.activityChart?.destroy();
+    if (type === 'female' && this.femaleChart) this.femaleChart.destroy();
+    if (type === 'male' && this.maleChart) this.maleChart.destroy();
+    if (type === 'children' && this.childrenChart) this.childrenChart.destroy();
+    if (type === 'activity' && this.activityChart) this.activityChart.destroy();
 
     const chart = new Chart(id, {
       type: 'bar',
       plugins: [ChartDataLabels],
       data: {
         labels,
-        datasets: [{ data: values, backgroundColor: color, borderRadius: 4, barThickness: 15 }]
+        datasets: [{ data: values, backgroundColor: color, borderRadius: 4, barThickness: 20 }]
       },
       options: {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        layout: { padding: { right: 80 } },
         plugins: {
           legend: { display: false },
           datalabels: {
             anchor: 'end', align: 'right', color: 'white',
-            font: { size: 10 },
-            formatter: (val) => `${val} (${((val / total) * 100).toFixed(0)}%)`
+            formatter: (val: any) => `${val} (${((val / total) * 100).toFixed(1)}%)`
           }
         },
         scales: {
-          x: { beginAtZero: true, grid: { display: false }, ticks: { display: false } },
-          y: { grid: { display: false }, ticks: { color: 'white', font: { size: 11 } } }
+          x: { beginAtZero: true, grid: { display: false }, ticks: { color: '#94a3b8' } },
+          y: { grid: { display: false }, ticks: { color: 'white' } }
         }
       }
     });
