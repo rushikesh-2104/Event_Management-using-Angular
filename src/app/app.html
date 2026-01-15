@@ -1,16 +1,20 @@
 <div class="bg-slate-700 min-h-screen w-full p-1">
-  <div class="lg:grid lg:grid-cols-5 gap-2">
-    <div class="bg-slate-900 p-3 min-h-screen rounded-lg">
-      <div class="flex flex-col gap-3">
-        <div class="ultra-regular text-5xl text-white mb-4">EventTrack</div>
-        <a routerLink="/" routerLinkActive="text-sky-400 font-bold" [routerLinkActiveOptions]="{exact: true}" 
-           class="text-slate-300 cursor-pointer hover:text-white transition-colors">Dashboard</a>
-        <a routerLink="/table" routerLinkActive="text-sky-400 font-bold" 
-           class="text-slate-300 cursor-pointer hover:text-white transition-colors">Table</a>
+  <div class="flex flex-col lg:grid lg:grid-cols-5 gap-2">
+    
+    <div class="bg-slate-900 p-3 lg:min-h-screen rounded-lg">
+      <div class="flex flex-row lg:flex-col justify-between lg:justify-start gap-3 items-center lg:items-start">
+        <div class="ultra-regular text-2xl lg:text-5xl text-white">EventTrack</div>
+        
+        <div class="flex lg:flex-col gap-4 lg:gap-3">
+          <a routerLink="/" routerLinkActive="text-sky-400 font-bold" [routerLinkActiveOptions]="{exact: true}" 
+             class="text-slate-300 text-sm lg:text-base">Dashboard</a>
+          <a routerLink="/table" routerLinkActive="text-sky-400 font-bold" 
+             class="text-slate-300 text-sm lg:text-base">Table</a>
+        </div>
       </div>
     </div>
 
-    <div class="col-span-4">
+    <div class="col-span-4 w-full overflow-hidden">
       <router-outlet></router-outlet>
     </div>
   </div>
