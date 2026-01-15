@@ -1,37 +1,42 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import * as XLSX from 'xlsx';
 import { Chart } from 'chart.js/auto';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { DataService } from '../../data';
-// 1. Service ko import kiya
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   data: any[] = [];
 
-  // TOP CARDS
   totalParticipants = 0;
   totalGameEntries = 0;
   totalEventEntries = 0;
 
-  // DATA STORAGE
   femaleGameCount: { [key: string]: number } = {};
   maleGameCount: { [key: string]: number } = {};
   childrenGameCount: { [key: string]: number } = {};
   activityStats: { [key: string]: number } = {}; 
 
-  // CHART REFERENCES
   femaleChart: any;
   maleChart: any;
   childrenChart: any;
   activityChart: any;
 
-  // 2. Constructor mein DataService ko inject kiya
   constructor(private dataService: DataService) {}
+
+  ngOnInit(): void {
+    // 1. Page load hote hi Service se saved data uthao (Persistence)
+    this.dataService.currentData.subscribe(savedData => {
+      if (savedData && savedData.length > 0) {
+        this.data = savedData;
+        this.processData();
+      }
+    });
+  }
 
   onFileUpload(event: any): void {
     const file = event.target.files[0];
@@ -40,13 +45,10 @@ export class DashboardComponent {
     reader.onload = (e: any) => {
       const workbook = XLSX.read(e.target.result, { type: 'binary' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      this.data = XLSX.utils.sheet_to_json(sheet);
+      const jsonData = XLSX.utils.sheet_to_json(sheet);
       
-      // 3. Sabse important: Excel data ko Service mein bhej diya
-      // Taaki Table Component isse use kar sake
-      this.dataService.setData(this.data);
-      
-      this.processData();
+      // 2. Data ko service ke through update karo (Yeh localStorage mein bhi save karega)
+      this.dataService.updateData(jsonData); 
     };
     reader.readAsBinaryString(file);
   }
@@ -54,6 +56,7 @@ export class DashboardComponent {
   processData(): void {
     if (!this.data || this.data.length === 0) return;
 
+    // Reset counts before processing
     this.totalParticipants = this.data.length;
     this.totalGameEntries = 0;
     this.totalEventEntries = 0;
@@ -75,6 +78,7 @@ export class DashboardComponent {
       const childrenGamesKey = keys.find(k => k.toLowerCase().includes('which games') && (k.toLowerCase().includes('children') || k.toLowerCase().includes('kids')));
       const activitiesKey = keys.find(k => k.toLowerCase().includes('which activity')); 
 
+      // Stats Calculation Logic
       if (overallGamesKey && row[overallGamesKey]) {
         const val = String(row[overallGamesKey]);
         if (!val.toLowerCase().includes('none')) {
@@ -87,7 +91,6 @@ export class DashboardComponent {
         if (!val.toLowerCase().includes('none')) {
           const items = val.split(',').map(a => a.trim()).filter(a => a.length > 0);
           this.totalEventEntries += items.length;
-          
           items.forEach(item => {
             this.activityStats[item] = (this.activityStats[item] || 0) + 1;
           });
@@ -100,7 +103,7 @@ export class DashboardComponent {
             const name = g.trim();
             if (!name) return;
             if (name.toLowerCase().includes('none')) {
-              storage['NONE (Male/Skipped)'] = (storage['NONE (Male/Skipped)'] || 0) + 1;
+              storage['NONE (Skipped)'] = (storage['NONE (Skipped)'] || 0) + 1;
             } else {
               storage[name] = (storage[name] || 0) + 1;
             }
@@ -113,10 +116,13 @@ export class DashboardComponent {
       fillStorage(childrenGamesKey, this.childrenGameCount);
     });
 
-    this.renderChart('femaleChart', this.femaleGameCount, '#a855f7', 'female');
-    this.renderChart('maleChart', this.maleGameCount, '#3b82f6', 'male');
-    this.renderChart('childrenChart', this.childrenGameCount, '#f59e0b', 'children');
-    this.renderChart('activityChart', this.activityStats, '#10b981', 'activity'); 
+    // Render Charts
+    setTimeout(() => { // Timeout ensures DOM is ready for Canvas
+      this.renderChart('femaleChart', this.femaleGameCount, '#a855f7', 'female');
+      this.renderChart('maleChart', this.maleGameCount, '#3b82f6', 'male');
+      this.renderChart('childrenChart', this.childrenGameCount, '#f59e0b', 'children');
+      this.renderChart('activityChart', this.activityStats, '#10b981', 'activity');
+    }, 100);
   }
 
   renderChart(id: string, dataset: any, color: string, type: string): void {
@@ -124,33 +130,34 @@ export class DashboardComponent {
     const values = Object.values(dataset);
     const total = this.totalParticipants;
 
-    if (type === 'female' && this.femaleChart) this.femaleChart.destroy();
-    if (type === 'male' && this.maleChart) this.maleChart.destroy();
-    if (type === 'children' && this.childrenChart) this.childrenChart.destroy();
-    if (type === 'activity' && this.activityChart) this.activityChart.destroy();
+    // Destroy old chart instances to prevent memory leaks
+    if (type === 'female') this.femaleChart?.destroy();
+    if (type === 'male') this.maleChart?.destroy();
+    if (type === 'children') this.childrenChart?.destroy();
+    if (type === 'activity') this.activityChart?.destroy();
 
     const chart = new Chart(id, {
       type: 'bar',
       plugins: [ChartDataLabels],
       data: {
         labels,
-        datasets: [{ data: values, backgroundColor: color, borderRadius: 4, barThickness: 20 }]
+        datasets: [{ data: values, backgroundColor: color, borderRadius: 4, barThickness: 15 }]
       },
       options: {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        layout: { padding: { right: 80 } },
         plugins: {
           legend: { display: false },
           datalabels: {
             anchor: 'end', align: 'right', color: 'white',
-            formatter: (val) => `${val} (${((val / total) * 100).toFixed(1)}%)`
+            font: { size: 10 },
+            formatter: (val) => `${val} (${((val / total) * 100).toFixed(0)}%)`
           }
         },
         scales: {
-          x: { beginAtZero: true, grid: { display: false }, ticks: { color: '#94a3b8' } },
-          y: { grid: { display: false }, ticks: { color: 'white' } }
+          x: { beginAtZero: true, grid: { display: false }, ticks: { display: false } },
+          y: { grid: { display: false }, ticks: { color: 'white', font: { size: 11 } } }
         }
       }
     });
