@@ -7,12 +7,14 @@ import { DashboardComponent } from './components/dashboard/dashboard';
 import { TableComponent } from './components/table/table';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { Cricket } from './cricket/cricket';
 
 
 @NgModule({
   declarations: [
     App,
-    TableComponent
+    TableComponent,
+    Cricket
   ],
   imports: [
     BrowserModule,

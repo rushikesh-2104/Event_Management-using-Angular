@@ -1,0 +1,133 @@
+<div class="bg-slate-900 text-white p-6 min-h-screen">
+  <h2 class="text-3xl font-bold text-sky-400 mb-6 lora">Cricket Team Manager</h2>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <div class="bg-slate-800 p-4 rounded-lg border border-slate-700 shadow-xl">
+      <div class="mb-4 space-y-3">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xl font-semibold text-emerald-400">Available Players</h3>
+          <span class="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-xs font-bold">
+            {{cricketPlayers.length}} Left
+          </span>
+        </div>
+
+        <div class="relative">
+          <select [(ngModel)]="selectedCategory" (change)="applyCategoryFilter()" 
+                  class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-sm text-sky-400 outline-none focus:border-emerald-500 appearance-none cursor-pointer">
+            <option value="all">All Cricketers</option>
+            <option value="male">Males Only</option>
+            <option value="female">Females Only</option>
+            <option value="kids">Kids Only</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="max-h-[550px] overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+        <div *ngFor="let p of cricketPlayers" class="bg-slate-700/50 p-3 rounded-lg flex justify-between items-center text-sm border border-slate-600/50 hover:bg-slate-700 transition-all group">
+          <span class="font-medium truncate mr-2 group-hover:text-emerald-400">{{ p[nameColumn] }}</span>
+          
+          <select (change)="assignToTeam(p, +$any($event.target).value)" 
+                  class="bg-sky-600 text-[10px] p-1.5 rounded-md cursor-pointer outline-none hover:bg-sky-500 border-none">
+            <option selected disabled>Add to Team</option>
+            <option *ngFor="let t of teams; let i = index" [value]="i">{{t.name}}</option>
+          </select>
+        </div>
+        <div *ngIf="cricketPlayers.length === 0" class="text-center py-10 text-slate-500 italic text-sm">
+          No players found.
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-2 space-y-6">
+      
+      <div class="bg-slate-800 p-4 rounded-lg border border-slate-700 flex gap-2 shadow-lg">
+        <input [(ngModel)]="newTeamName" (keyup.enter)="addTeam()"
+               placeholder="Enter Team Name..." 
+               class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg flex-1 outline-none focus:border-sky-500 text-sm">
+        <button (click)='addTeam()' class="bg-sky-600 px-6 py-2 rounded-lg font-bold hover:bg-sky-700 active:scale-95 transition-all">
+          Create Team
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div *ngFor="let team of teams; let i = index" class="bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-lg flex flex-col">
+          <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-3">
+            <h4 class="font-bold text-sky-300 uppercase tracking-wider">{{team.name}}</h4>
+            <span class="text-[10px] bg-sky-500/10 text-sky-400 px-2 py-1 rounded-full border border-sky-400/20">
+              {{team.players.length}} Players
+            </span>
+          </div>
+          <div class="space-y-2 flex-grow min-h-[80px]">
+            <div *ngFor="let player of team.players" class="flex justify-between items-center text-xs bg-slate-900/80 p-2.5 rounded-lg border border-slate-700/50">
+              <span class="truncate">{{ player[nameColumn] }}</span>
+              <button (click)="removeFromTeam(player, i)" class="text-slate-500 hover:text-red-400"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 bg-slate-800/50 p-6 rounded-xl border border-dashed border-slate-700 shadow-2xl">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+          <div>
+            <h3 class="text-2xl font-bold text-white">Tournament Fixtures</h3>
+            <p class="text-slate-500 text-xs italic">Progression: M1&M2 Winner -> M4 | M1&M2 Loser -> M3</p>
+          </div>
+          <button (click)="generateFixtures()" [disabled]="teams.length < 4"
+                  class="bg-emerald-600 disabled:bg-slate-700 px-8 py-3 rounded-xl font-bold hover:bg-emerald-700 transition-all active:scale-95">
+            Generate Schedule
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div *ngFor="let fix of fixtures" 
+               [ngClass]="{'md:col-span-2 bg-emerald-900/20 border-emerald-500': fix.id === 5, 'bg-slate-800 border-sky-500/50': fix.id !== 5}"
+               class="p-5 rounded-2xl border-l-8 shadow-xl relative overflow-hidden group transition-all">
+            
+            <div *ngIf="fix.winner" class="absolute top-0 right-0 bg-emerald-500 text-slate-900 text-[10px] px-3 py-1 font-black italic rounded-bl-lg animate-pulse z-10">
+              WINNER: {{fix.winner}}
+            </div>
+
+            <div class="flex justify-between items-center mb-4">
+              <span class="text-sky-400 text-xs font-black uppercase tracking-widest bg-sky-400/10 px-2 py-1 rounded">
+                {{fix.match}}
+              </span>
+              <span class="text-[10px] font-bold px-2 py-1 rounded-full uppercase"
+                    [ngClass]="{'bg-rose-500/20 text-rose-400': fix.type === 'Eliminator', 'bg-emerald-500/20 text-emerald-400': fix.type === 'GRAND FINAL', 'bg-sky-500/20 text-sky-400': fix.type !== 'Eliminator' && fix.type !== 'GRAND FINAL'}">
+                {{fix.type}}
+              </span>
+            </div>
+
+            <div class="flex items-center justify-around gap-2 py-4">
+              <div class="text-center w-1/3">
+                <p [ngClass]="{'text-emerald-400 font-black': fix.winner === fix.team1, 'text-white': fix.winner !== fix.team1}" class="text-sm md:text-base tracking-tight transition-all">{{fix.team1}}</p>
+              </div>
+              <div class="bg-slate-700 h-8 w-8 rounded-full flex items-center justify-center text-[10px] font-black text-slate-400 border border-slate-600">VS</div>
+              <div class="text-center w-1/3">
+                <p [ngClass]="{'text-emerald-400 font-black': fix.winner === fix.team2, 'text-white': fix.winner !== fix.team2}" class="text-sm md:text-base tracking-tight transition-all">{{fix.team2}}</p>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-700/50">
+              <label class="text-[10px] text-slate-500 uppercase font-bold block mb-2">Declare Winner</label>
+              <select (change)="updateMatchWinner(fix.id, $any($event.target).value)"
+                      [disabled]="fix.team1.includes('Match') || fix.team2.includes('Match')"
+                      class="w-full bg-slate-900 border border-slate-700 text-sky-400 text-xs p-2.5 rounded-lg outline-none focus:border-emerald-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                <option selected disabled>-- Choose Winner --</option>
+                <option [value]="fix.team1" [selected]="fix.winner === fix.team1">{{fix.team1}}</option>
+                <option [value]="fix.team2" [selected]="fix.winner === fix.team2">{{fix.team2}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="fixtures.length === 0" class="text-center py-12">
+          <div class="bg-slate-900/50 inline-block p-6 rounded-full mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          </div>
+          <p class="text-slate-500 text-sm">Create 4 teams to unlock the tournament tree.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
