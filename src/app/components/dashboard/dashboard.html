@@ -1,53 +1,96 @@
-<div class="bg-slate-200 h-full w-full p-1">
-    
-<div class="lg:grid lg:grid-cols-5 lg:grid-rows-6 lg:gap-2">
+<div class="bg-slate-200 min-h-screen w-full p-1">
 
-    <div class="lg:row-span-6 bg-slate-900 lg:p-3 p-2">
-        
-<div class="lg:grid lg:grid-cols-1 lg:grid-rows-3 flex">
-    <div class="ultra-regular ml-2 lg:ml-0 lg:text-5xl text-2xl text-white">EventTrack</div>
-    <div class="lg:mt-3 mt-1 ml-18 lg:ml-0">
+  <div class="lg:grid lg:grid-cols-5 gap-2">
+
+    <div class="bg-slate-900 p-3">
+      <div class="flex flex-col gap-3">
+        <div class="ultra-regular text-5xl text-white">EventTrack</div>
         <p class="text-slate-300">Dashboard</p>
-    </div>
-    <div class="lg:mt-1 mt-1 ml-5 lg:ml-0">
         <p class="text-slate-300">Table</p>
-    </div>
-</div>
-    
+      </div>
     </div>
 
-    <div class="col-span-4 bg-sky-700 text-slate-100 text-center lg:text-4xl lg:pt-10 pt-0.5 lora">YASHOPURAM VASANT ANNUAL POOJA 2026</div>
+    <div class="col-span-4 flex flex-col gap-2">
 
-    <div class="col-span-4 col-start-2 row-start-2 text-center lg:h-[15vh]">
-        
-<div class="grid grid-cols-3 grid-rows-1 gap-2 h-full">
-    <div class="bg-sky-300 lg:pt-5 lora text-2xl">
-        <p>Total Participations</p>
-        <p class="text-4xl pt-2">{{ totalParticipants }}</p>
-    </div>
-    <div class="bg-sky-300 lg:pt-5 lora text-2xl">
-        <p>Games Participations</p>
-        <p class="text-4xl pt-2">{{ totalGameEntries }}</p>
-    </div>
+      <div class="bg-sky-700 text-white text-center text-4xl py-4 lora">
+        YASHOPURAM VASANT ANNUAL POOJA 2026
+      </div>
 
-    <div class="bg-sky-300 lg:pt-5 lora text-2xl">
-        <p>Event Participations</p>
-        <p class="text-4xl pt-2">{{ totalEventEntries }}</p>
-    </div>
-    
-</div>
-    
-    </div>
-
-    <div class="col-span-4 row-span-4 col-start-2 row-start-3 bg-slate-800 text-white">
-        <div class="pl-5 pt-3">
-            <input type="file" accept=".xlsx,.xls" (change)="onFileUpload($event)" class="border border-white p-3">
-            <p>Total Participants: {{ totalParticipants }}</p>
-            <canvas id="gamesChart" width="600" height="100"></canvas>
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div class="bg-sky-300 py-4 lora text-2xl">
+          <p>Total Participants</p>
+          <p class="text-4xl">{{ totalParticipants }}</p>
         </div>
+        <div class="bg-sky-300 py-4 lora text-2xl">
+          <p>Total Game Selections</p>
+          <p class="text-4xl">{{ totalGameEntries }}</p>
+        </div>
+        <div class="bg-sky-300 py-4 lora text-2xl">
+          <p>Total Event Selections</p>
+          <p class="text-4xl">{{ totalEventEntries }}</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-800 text-white p-5 overflow-y-auto">
+
+        <div class="flex flex-col gap-1 mb-6">
+          <label class="text-slate-400 text-sm">Upload Excel Sheet</label>
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            (change)="onFileUpload($event)"
+            class="border border-slate-600 p-3 w-fit bg-slate-700 rounded"
+          />
+          <p class="mt-2 text-slate-300">
+            Total Participants Processed: <strong>{{ totalParticipants }}</strong>
+          </p>
+        </div>
+
+        <hr class="border-slate-700 mb-8" />
+
+        <div class="mb-12">
+          <div class="flex justify-between items-center mb-4">
+            <p class="text-xl font-semibold text-purple-400">Which games are you interested in? (for Female)</p>
+            <span class="bg-purple-900 text-purple-200 text-xs px-2 py-1 rounded">Female Category</span>
+          </div>
+          <div style="position: relative; height: 400px; width: 100%;">
+            <canvas id="femaleChart"></canvas>
+          </div>
+        </div>
+
+        <div class="mb-12 border-t border-slate-700 pt-8">
+          <div class="flex justify-between items-center mb-4">
+            <p class="text-xl font-semibold text-blue-400">Which games are you interested in? (for Male)</p>
+            <span class="bg-blue-900 text-blue-200 text-xs px-2 py-1 rounded">Male Category</span>
+          </div>
+          <div style="position: relative; height: 400px; width: 100%;">
+            <canvas id="maleChart"></canvas>
+          </div>
+        </div>
+
+        <div class="mb-8 border-t border-slate-700 pt-8">
+          <div class="flex justify-between items-center mb-4">
+            <p class="text-xl font-semibold text-yellow-400">Which games are you interested in? (for Children/Kids)</p>
+            <span class="bg-yellow-900 text-yellow-200 text-xs px-2 py-1 rounded">Kids Category</span>
+          </div>
+          <div style="position: relative; height: 400px; width: 100%;">
+            <canvas id="childrenChart"></canvas>
+          </div>
+        </div>
+
+        <div class="mb-8 border-t border-slate-700 pt-8">
+  <div class="flex justify-between items-center mb-4">
+    <p class="text-xl font-semibold text-emerald-400">Which activity are you interested in?</p>
+    <span class="bg-emerald-900 text-emerald-200 text-xs px-2 py-1 rounded">Overall Activities</span>
+  </div>
+  <div style="position: relative; height: 350px; width: 100%;">
+    <canvas id="activityChart"></canvas>
+  </div>
+</div>
+
+      </div>
+
     </div>
 
+  </div>
 </div>
-    
-</div>
-    
