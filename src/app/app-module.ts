@@ -5,6 +5,8 @@ import { AppRoutingModule } from './app-routing-module';
 import { App } from './app';
 import { DashboardComponent } from './components/dashboard/dashboard';
 import { TableComponent } from './components/table/table';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 
 @NgModule({
@@ -14,7 +16,9 @@ import { TableComponent } from './components/table/table';
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    FormsModule,
+    RouterModule
   ],
   providers: [
     provideBrowserGlobalErrorListeners()
